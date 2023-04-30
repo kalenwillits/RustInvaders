@@ -2,9 +2,11 @@ use crate::{
     frame::{Drawable, Frame},
     invaders::Invaders,
     shot::Shot,
-    {NUM_COLS, NUM_ROWS},
+    {NUM_COLS, NUM_ROWS, PLAYER_SPRITE},
 };
 use std::time::Duration;
+
+
 
 pub struct Player {
     x: usize,
@@ -67,7 +69,7 @@ impl Default for Player {
 
 impl Drawable for Player {
     fn draw(&self, frame: &mut Frame) {
-        frame[self.x][self.y] = 'A';
+        frame[self.x][self.y] = PLAYER_SPRITE;
         for shot in self.shots.iter() {
             shot.draw(frame);
         }

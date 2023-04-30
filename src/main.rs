@@ -1,6 +1,5 @@
 use crossterm::{
     cursor::{Hide, Show},
-    event::{self, Event, KeyCode},
     terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
@@ -22,6 +21,7 @@ use invaders::{
     score::Score,
 };
 
+
 fn render_screen(render_rx: Receiver<Frame>) {
     let mut last_frame = frame::new_frame();
     let mut stdout = io::stdout();
@@ -38,10 +38,11 @@ fn reset_game(in_menu: &mut bool, player: &mut Player, invaders: &mut Invaders) 
     *invaders = Invaders::new();
 }
 
+
 fn main() -> Result<(), Box<dyn Error>> {
     let mut audio = Audio::new();
     for item in &["explode", "lose", "move", "pew", "startup", "win"] {
-        audio.add(item, &format!("audio/original/{}.wav", item));
+        audio.add(item, &format!("audio/original/{}.ogg", item));
     }
     audio.play("startup");
 
@@ -72,14 +73,16 @@ fn main() -> Result<(), Box<dyn Error>> {
         instant = Instant::now();
         let mut curr_frame = new_frame();
 
+        
         if in_menu {
-            // Input handlers for the menu
-            while event::poll(Duration::default())? {
-                if let Event::Key(key_event) = event::read()? {
+
+
+            while crossterm::event::poll(Duration::default())? {
+                if let crossterm::event::Event::Key(key_event) = crossterm::event::read()? {
                     match key_event.code {
-                        KeyCode::Up => menu.change_option(true),
-                        KeyCode::Down => menu.change_option(false),
-                        KeyCode::Char(' ') | KeyCode::Enter => {
+                        crossterm::event::KeyCode::Up => menu.change_option(true),
+                        crossterm::event::KeyCode::Down => menu.change_option(false),
+                        crossterm::event::KeyCode::Char(' ') | crossterm::event::KeyCode::Enter => {
                             if menu.selection == 0 {
                                 in_menu = false;
                             } else {
@@ -95,24 +98,23 @@ fn main() -> Result<(), Box<dyn Error>> {
             let _ = render_tx.send(curr_frame);
             thread::sleep(Duration::from_millis(1));
             continue;
-        }
-
-        // Input handlers for the game
-        while event::poll(Duration::default())? {
-            if let Event::Key(key_event) = event::read()? {
-                match key_event.code {
-                    KeyCode::Left => player.move_left(),
-                    KeyCode::Right => player.move_right(),
-                    KeyCode::Char(' ') | KeyCode::Enter => {
-                        if player.shoot() {
-                            audio.play("pew");
+        } else {
+            while crossterm::event::poll(Duration::default())? {
+                if let crossterm::event::Event::Key(key_event) = crossterm::event::read()? {
+                    match key_event.code {
+                        crossterm::event::KeyCode::Left => player.move_left(),
+                        crossterm::event::KeyCode::Right => player.move_right(),
+                        crossterm::event::KeyCode::Char(' ') | crossterm::event::KeyCode::Enter => {
+                            if player.shoot() {
+                                audio.play("pew");
+                            }
                         }
+                        crossterm::event::KeyCode::Esc | crossterm::event::KeyCode::Char('q') => {
+                            audio.play("lose");
+                            reset_game(&mut in_menu, &mut player, &mut invaders);
+                        }
+                        _ => {}
                     }
-                    KeyCode::Esc | KeyCode::Char('q') => {
-                        audio.play("lose");
-                        reset_game(&mut in_menu, &mut player, &mut invaders);
-                    }
-                    _ => {}
                 }
             }
         }

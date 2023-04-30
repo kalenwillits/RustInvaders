@@ -1,9 +1,11 @@
+
 use crate::{
     frame::{Drawable, Frame},
-    {NUM_COLS, NUM_ROWS},
+    {NUM_COLS, NUM_ROWS, INVADER_SPRITE},
 };
 use rusty_time::timer::Timer;
 use std::{cmp::max, time::Duration};
+
 
 pub struct Invader {
     pub x: usize,
@@ -109,9 +111,9 @@ impl Drawable for Invaders {
                 / self.move_timer.duration.as_secs_f32())
                 > 0.5
             {
-                'x'
+                INVADER_SPRITE[0]
             } else {
-                '+'
+                INVADER_SPRITE[1]
             }
         }
     }
